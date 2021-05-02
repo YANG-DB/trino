@@ -114,6 +114,8 @@ statement
     | SHOW CREATE MATERIALIZED VIEW qualifiedName                      #showCreateMaterializedView
     | SHOW TABLES ((FROM | IN) qualifiedName)?
         (LIKE pattern=string (ESCAPE escape=string)?)?                 #showTables
+    | SHOW GRAPHS ((FROM | IN) qualifiedName)?
+        (LIKE pattern=string (ESCAPE escape=string)?)?                 #showGraphs
     | SHOW SCHEMAS ((FROM | IN) identifier)?
         (LIKE pattern=string (ESCAPE escape=string)?)?                 #showSchemas
     | SHOW CATALOGS
@@ -759,6 +761,8 @@ SUBSTRING: 'SUBSTRING';
 SYSTEM: 'SYSTEM';
 TABLE: 'TABLE';
 TABLES: 'TABLES';
+GRAPH: 'GRAPH';
+GRAPHS: 'GRAPHS';
 TABLESAMPLE: 'TABLESAMPLE';
 TEXT: 'TEXT';
 THEN: 'THEN';

@@ -117,7 +117,7 @@
         <module>plugin/trino-hive-hadoop2</module>
         <module>plugin/trino-iceberg</module>
         <module>plugin/trino-jmx</module>
-        <module>plugin/trino-kafka</module>
+<!--        <module>plugin/trino-kafka</module>-->
         <module>plugin/trino-kinesis</module>
         <module>plugin/trino-kudu</module>
         <module>plugin/trino-local-file</module>
@@ -215,6 +215,12 @@
                 <groupId>io.trino</groupId>
                 <artifactId>trino-cli</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>oracle.pgx</groupId>
+                <artifactId>pgql-lang</artifactId>
+                <version>1.3.0-SNAPSHOT</version>
             </dependency>
 
             <dependency>
@@ -769,6 +775,12 @@
                 <groupId>io.airlift</groupId>
                 <artifactId>trace-token</artifactId>
                 <version>${dep.airlift.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.cytosm</groupId>
+                <artifactId>cypher2sql</artifactId>
+                <version>1.0-SNAPSHOT</version>
             </dependency>
 
             <dependency>

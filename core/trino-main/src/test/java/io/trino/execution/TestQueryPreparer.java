@@ -15,6 +15,7 @@ package io.trino.execution;
 
 import io.trino.Session;
 import io.trino.execution.QueryPreparer.PreparedQuery;
+import io.trino.sql.parser.GraphSqlParser;
 import io.trino.sql.parser.SqlParser;
 import io.trino.sql.tree.AllColumns;
 import io.trino.sql.tree.QualifiedName;
@@ -33,7 +34,8 @@ import static org.testng.Assert.assertEquals;
 public class TestQueryPreparer
 {
     private static final SqlParser SQL_PARSER = new SqlParser();
-    private static final QueryPreparer QUERY_PREPARER = new QueryPreparer(SQL_PARSER);
+    private static final GraphSqlParser GRAPH_SQL_PARSER = new GraphSqlParser();
+    private static final QueryPreparer QUERY_PREPARER = new QueryPreparer(SQL_PARSER,GRAPH_SQL_PARSER);
 
     @Test
     public void testSelectStatement()

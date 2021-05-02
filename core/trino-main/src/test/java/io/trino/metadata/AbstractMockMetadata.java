@@ -61,10 +61,7 @@ import io.trino.spi.security.TrinoPrincipal;
 import io.trino.spi.statistics.ComputedStatistics;
 import io.trino.spi.statistics.TableStatistics;
 import io.trino.spi.statistics.TableStatisticsMetadata;
-import io.trino.spi.type.ParametricType;
-import io.trino.spi.type.Type;
-import io.trino.spi.type.TypeId;
-import io.trino.spi.type.TypeSignature;
+import io.trino.spi.type.*;
 import io.trino.sql.analyzer.TypeSignatureProvider;
 import io.trino.sql.planner.PartitioningHandle;
 import io.trino.sql.tree.QualifiedName;
@@ -81,7 +78,7 @@ import static io.trino.metadata.FunctionKind.SCALAR;
 import static io.trino.spi.StandardErrorCode.FUNCTION_NOT_FOUND;
 import static io.trino.spi.type.DoubleType.DOUBLE;
 
-public abstract class AbstractMockMetadata
+public class AbstractMockMetadata
         implements Metadata
 {
     public static Metadata dummyMetadata()
@@ -858,6 +855,27 @@ public abstract class AbstractMockMetadata
     @Override
     public Optional<TableScanRedirectApplicationResult> applyTableScanRedirect(Session session, TableHandle tableHandle)
     {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void validateScan(Session session, TableHandle table) {
+        throw new UnsupportedOperationException();
+
+    }
+
+    @Override
+    public Type getParameterizedType(String baseTypeName, List<TypeSignatureParameter> typeParameters) {
+        return null;
+    }
+
+    @Override
+    public ResolvedFunction getCoercion(Type fromType, Type toType) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public GraphPropertyManager getGraphPropertyManager() {
         throw new UnsupportedOperationException();
     }
 }

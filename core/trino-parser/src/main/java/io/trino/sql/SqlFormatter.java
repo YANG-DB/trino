@@ -15,114 +15,7 @@ package io.trino.sql;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
-import io.trino.sql.tree.AddColumn;
-import io.trino.sql.tree.AliasedRelation;
-import io.trino.sql.tree.AllColumns;
-import io.trino.sql.tree.Analyze;
-import io.trino.sql.tree.AstVisitor;
-import io.trino.sql.tree.Call;
-import io.trino.sql.tree.CallArgument;
-import io.trino.sql.tree.ColumnDefinition;
-import io.trino.sql.tree.Comment;
-import io.trino.sql.tree.Commit;
-import io.trino.sql.tree.CreateMaterializedView;
-import io.trino.sql.tree.CreateRole;
-import io.trino.sql.tree.CreateSchema;
-import io.trino.sql.tree.CreateTable;
-import io.trino.sql.tree.CreateTableAsSelect;
-import io.trino.sql.tree.CreateView;
-import io.trino.sql.tree.Deallocate;
-import io.trino.sql.tree.Delete;
-import io.trino.sql.tree.DescribeInput;
-import io.trino.sql.tree.DescribeOutput;
-import io.trino.sql.tree.DropColumn;
-import io.trino.sql.tree.DropMaterializedView;
-import io.trino.sql.tree.DropRole;
-import io.trino.sql.tree.DropSchema;
-import io.trino.sql.tree.DropTable;
-import io.trino.sql.tree.DropView;
-import io.trino.sql.tree.Except;
-import io.trino.sql.tree.Execute;
-import io.trino.sql.tree.Explain;
-import io.trino.sql.tree.ExplainFormat;
-import io.trino.sql.tree.ExplainOption;
-import io.trino.sql.tree.ExplainType;
-import io.trino.sql.tree.Expression;
-import io.trino.sql.tree.FetchFirst;
-import io.trino.sql.tree.Grant;
-import io.trino.sql.tree.GrantRoles;
-import io.trino.sql.tree.GrantorSpecification;
-import io.trino.sql.tree.Identifier;
-import io.trino.sql.tree.Insert;
-import io.trino.sql.tree.Intersect;
-import io.trino.sql.tree.Isolation;
-import io.trino.sql.tree.Join;
-import io.trino.sql.tree.JoinCriteria;
-import io.trino.sql.tree.JoinOn;
-import io.trino.sql.tree.JoinUsing;
-import io.trino.sql.tree.Lateral;
-import io.trino.sql.tree.LikeClause;
-import io.trino.sql.tree.Limit;
-import io.trino.sql.tree.Merge;
-import io.trino.sql.tree.MergeCase;
-import io.trino.sql.tree.MergeDelete;
-import io.trino.sql.tree.MergeInsert;
-import io.trino.sql.tree.MergeUpdate;
-import io.trino.sql.tree.NaturalJoin;
-import io.trino.sql.tree.Node;
-import io.trino.sql.tree.Offset;
-import io.trino.sql.tree.OrderBy;
-import io.trino.sql.tree.Prepare;
-import io.trino.sql.tree.PrincipalSpecification;
-import io.trino.sql.tree.Property;
-import io.trino.sql.tree.QualifiedName;
-import io.trino.sql.tree.Query;
-import io.trino.sql.tree.QuerySpecification;
-import io.trino.sql.tree.RefreshMaterializedView;
-import io.trino.sql.tree.Relation;
-import io.trino.sql.tree.RenameColumn;
-import io.trino.sql.tree.RenameSchema;
-import io.trino.sql.tree.RenameTable;
-import io.trino.sql.tree.RenameView;
-import io.trino.sql.tree.ResetSession;
-import io.trino.sql.tree.Revoke;
-import io.trino.sql.tree.RevokeRoles;
-import io.trino.sql.tree.Rollback;
-import io.trino.sql.tree.Row;
-import io.trino.sql.tree.SampledRelation;
-import io.trino.sql.tree.Select;
-import io.trino.sql.tree.SelectItem;
-import io.trino.sql.tree.SetPath;
-import io.trino.sql.tree.SetRole;
-import io.trino.sql.tree.SetSchemaAuthorization;
-import io.trino.sql.tree.SetSession;
-import io.trino.sql.tree.SetTableAuthorization;
-import io.trino.sql.tree.SetViewAuthorization;
-import io.trino.sql.tree.ShowCatalogs;
-import io.trino.sql.tree.ShowColumns;
-import io.trino.sql.tree.ShowCreate;
-import io.trino.sql.tree.ShowFunctions;
-import io.trino.sql.tree.ShowGrants;
-import io.trino.sql.tree.ShowRoleGrants;
-import io.trino.sql.tree.ShowRoles;
-import io.trino.sql.tree.ShowSchemas;
-import io.trino.sql.tree.ShowSession;
-import io.trino.sql.tree.ShowStats;
-import io.trino.sql.tree.ShowTables;
-import io.trino.sql.tree.SingleColumn;
-import io.trino.sql.tree.StartTransaction;
-import io.trino.sql.tree.Table;
-import io.trino.sql.tree.TableSubquery;
-import io.trino.sql.tree.TransactionAccessMode;
-import io.trino.sql.tree.TransactionMode;
-import io.trino.sql.tree.Union;
-import io.trino.sql.tree.Unnest;
-import io.trino.sql.tree.Update;
-import io.trino.sql.tree.UpdateAssignment;
-import io.trino.sql.tree.Values;
-import io.trino.sql.tree.WindowDefinition;
-import io.trino.sql.tree.With;
-import io.trino.sql.tree.WithQuery;
+import io.trino.sql.tree.*;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -895,6 +788,25 @@ public final class SqlFormatter
         protected Void visitShowTables(ShowTables node, Integer context)
         {
             builder.append("SHOW TABLES");
+
+            node.getSchema().ifPresent(value ->
+                    builder.append(" FROM ")
+                            .append(formatName(value)));
+
+            node.getLikePattern().ifPresent(value ->
+                    builder.append(" LIKE ")
+                            .append(formatStringLiteral(value)));
+
+            node.getEscape().ifPresent(value ->
+                    builder.append(" ESCAPE ")
+                            .append(formatStringLiteral(value)));
+
+            return null;
+        }
+        @Override
+        protected Void visitShowGraphs(ShowGraphs node, Integer context)
+        {
+            builder.append("SHOW GRAPHS");
 
             node.getSchema().ifPresent(value ->
                     builder.append(" FROM ")

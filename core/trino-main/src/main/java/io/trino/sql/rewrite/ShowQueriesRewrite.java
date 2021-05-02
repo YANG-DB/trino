@@ -45,44 +45,7 @@ import io.trino.spi.session.PropertyMetadata;
 import io.trino.sql.analyzer.QueryExplainer;
 import io.trino.sql.parser.ParsingException;
 import io.trino.sql.parser.SqlParser;
-import io.trino.sql.tree.AllColumns;
-import io.trino.sql.tree.ArrayConstructor;
-import io.trino.sql.tree.AstVisitor;
-import io.trino.sql.tree.BooleanLiteral;
-import io.trino.sql.tree.ColumnDefinition;
-import io.trino.sql.tree.CreateMaterializedView;
-import io.trino.sql.tree.CreateSchema;
-import io.trino.sql.tree.CreateTable;
-import io.trino.sql.tree.CreateView;
-import io.trino.sql.tree.DoubleLiteral;
-import io.trino.sql.tree.Explain;
-import io.trino.sql.tree.Expression;
-import io.trino.sql.tree.Identifier;
-import io.trino.sql.tree.LikePredicate;
-import io.trino.sql.tree.LongLiteral;
-import io.trino.sql.tree.Node;
-import io.trino.sql.tree.NodeRef;
-import io.trino.sql.tree.Parameter;
-import io.trino.sql.tree.PrincipalSpecification;
-import io.trino.sql.tree.Property;
-import io.trino.sql.tree.QualifiedName;
-import io.trino.sql.tree.Query;
-import io.trino.sql.tree.Relation;
-import io.trino.sql.tree.ShowCatalogs;
-import io.trino.sql.tree.ShowColumns;
-import io.trino.sql.tree.ShowCreate;
-import io.trino.sql.tree.ShowFunctions;
-import io.trino.sql.tree.ShowGrants;
-import io.trino.sql.tree.ShowRoleGrants;
-import io.trino.sql.tree.ShowRoles;
-import io.trino.sql.tree.ShowSchemas;
-import io.trino.sql.tree.ShowSession;
-import io.trino.sql.tree.ShowTables;
-import io.trino.sql.tree.SortItem;
-import io.trino.sql.tree.Statement;
-import io.trino.sql.tree.StringLiteral;
-import io.trino.sql.tree.TableElement;
-import io.trino.sql.tree.Values;
+import io.trino.sql.tree.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -226,6 +189,39 @@ final class ShowQueriesRewrite
                     from(schema.getCatalogName(), TABLES.getSchemaTableName()),
                     predicate,
                     ordering(ascending("table_name")));
+        }
+
+        @Override
+        protected Node visitShowGraphs(ShowGraphs showGraphs, Void context)
+        {
+            CatalogSchemaName schema = createCatalogSchemaName(session, showGraphs, showGraphs.getSchema());
+
+            accessControl.checkCanShowTables(session.toSecurityContext(), schema);
+
+            if (!metadata.catalogExists(session, schema.getCatalogName())) {
+                throw semanticException(CATALOG_NOT_FOUND, showGraphs, "Catalog '%s' does not exist", schema.getCatalogName());
+            }
+
+            if (!metadata.schemaExists(session, schema)) {
+                throw semanticException(SCHEMA_NOT_FOUND, showGraphs, "Schema '%s' does not exist", schema.getSchemaName());
+            }
+
+            Expression predicate = equal(identifier("graph_schema"), new StringLiteral(schema.getSchemaName()));
+
+            Optional<String> likePattern = showGraphs.getLikePattern();
+            if (likePattern.isPresent()) {
+                Expression likePredicate = new LikePredicate(
+                        identifier("graph_name"),
+                        new StringLiteral(likePattern.get()),
+                        showGraphs.getEscape().map(StringLiteral::new));
+                predicate = logicalAnd(predicate, likePredicate);
+            }
+
+            return simpleQuery(
+                    selectList(aliasedName("graph_name", "Graph")),
+                    from(schema.getCatalogName(), TABLES.getSchemaTableName()),
+                    predicate,
+                    ordering(ascending("graph_name")));
         }
 
         @Override

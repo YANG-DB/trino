@@ -67,20 +67,7 @@ import io.trino.memory.MemoryManagerConfig;
 import io.trino.memory.MemoryPoolAssignmentsRequest;
 import io.trino.memory.MemoryResource;
 import io.trino.memory.NodeMemoryConfig;
-import io.trino.metadata.AnalyzePropertyManager;
-import io.trino.metadata.CatalogManager;
-import io.trino.metadata.ColumnPropertyManager;
-import io.trino.metadata.DiscoveryNodeManager;
-import io.trino.metadata.ForNodeManager;
-import io.trino.metadata.HandleJsonModule;
-import io.trino.metadata.InternalNodeManager;
-import io.trino.metadata.Metadata;
-import io.trino.metadata.MetadataManager;
-import io.trino.metadata.SchemaPropertyManager;
-import io.trino.metadata.SessionPropertyManager;
-import io.trino.metadata.StaticCatalogStore;
-import io.trino.metadata.StaticCatalogStoreConfig;
-import io.trino.metadata.TablePropertyManager;
+import io.trino.metadata.*;
 import io.trino.operator.ExchangeClientConfig;
 import io.trino.operator.ExchangeClientFactory;
 import io.trino.operator.ExchangeClientSupplier;
@@ -123,7 +110,9 @@ import io.trino.sql.gen.JoinCompiler;
 import io.trino.sql.gen.JoinFilterFunctionCompiler;
 import io.trino.sql.gen.OrderingCompiler;
 import io.trino.sql.gen.PageFunctionCompiler;
+import io.trino.sql.parser.GraphSqlParser;
 import io.trino.sql.parser.SqlParser;
+import io.trino.sql.parser.StatementCreator;
 import io.trino.sql.planner.CompilerConfig;
 import io.trino.sql.planner.LocalExecutionPlanner;
 import io.trino.sql.planner.NodePartitioningManager;
@@ -149,6 +138,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import static com.google.inject.multibindings.Multibinder.newSetBinder;
 import static com.google.inject.multibindings.OptionalBinder.newOptionalBinder;
+import static com.google.inject.name.Names.named;
 import static io.airlift.concurrent.Threads.daemonThreadsNamed;
 import static io.airlift.configuration.ConditionalModule.installModuleIf;
 import static io.airlift.configuration.ConfigBinder.configBinder;
@@ -198,6 +188,7 @@ public class ServerMainModule
         configBinder(binder).bindConfig(ProtocolConfig.class);
 
         binder.bind(SqlParser.class).in(Scopes.SINGLETON);
+        binder.bind(GraphSqlParser.class).in(Scopes.SINGLETON);
 
         jaxrsBinder(binder).bind(ThrowableMapper.class);
 
@@ -221,6 +212,9 @@ public class ServerMainModule
 
         // table properties
         binder.bind(TablePropertyManager.class).in(Scopes.SINGLETON);
+
+        // table properties
+        binder.bind(GraphPropertyManager.class).in(Scopes.SINGLETON);
 
         // column properties
         binder.bind(ColumnPropertyManager.class).in(Scopes.SINGLETON);

@@ -19,15 +19,7 @@ import io.trino.Session;
 import io.trino.connector.CatalogName;
 import io.trino.eventlistener.EventListenerConfig;
 import io.trino.eventlistener.EventListenerManager;
-import io.trino.metadata.AbstractMockMetadata;
-import io.trino.metadata.Catalog;
-import io.trino.metadata.CatalogManager;
-import io.trino.metadata.ColumnPropertyManager;
-import io.trino.metadata.MetadataManager;
-import io.trino.metadata.QualifiedObjectName;
-import io.trino.metadata.TableHandle;
-import io.trino.metadata.TableMetadata;
-import io.trino.metadata.TablePropertyManager;
+import io.trino.metadata.*;
 import io.trino.security.AllowAllAccessControl;
 import io.trino.spi.TrinoException;
 import io.trino.spi.connector.ColumnHandle;
@@ -108,6 +100,7 @@ public class TestCreateTableTask
         CatalogManager catalogManager = new CatalogManager();
         transactionManager = createTestTransactionManager(catalogManager);
         TablePropertyManager tablePropertyManager = new TablePropertyManager();
+        GraphPropertyManager graphPropertyManager = new GraphPropertyManager();
         ColumnPropertyManager columnPropertyManager = new ColumnPropertyManager();
         Catalog testCatalog = createBogusTestingCatalog(CATALOG_NAME);
         catalogManager.registerCatalog(testCatalog);
@@ -120,6 +113,7 @@ public class TestCreateTableTask
                 .build();
         metadata = new MockMetadata(
                 tablePropertyManager,
+                graphPropertyManager,
                 columnPropertyManager,
                 testCatalog.getConnectorCatalogName(),
                 emptySet());
@@ -270,6 +264,7 @@ public class TestCreateTableTask
     {
         private final MetadataManager metadata;
         private final TablePropertyManager tablePropertyManager;
+        private final GraphPropertyManager graphPropertyManager;
         private final ColumnPropertyManager columnPropertyManager;
         private final CatalogName catalogHandle;
         private final List<ConnectorTableMetadata> tables = new CopyOnWriteArrayList<>();
@@ -277,11 +272,13 @@ public class TestCreateTableTask
 
         public MockMetadata(
                 TablePropertyManager tablePropertyManager,
+                GraphPropertyManager graphPropertyManager,
                 ColumnPropertyManager columnPropertyManager,
                 CatalogName catalogHandle,
                 Set<ConnectorCapabilities> connectorCapabilities)
         {
             this.tablePropertyManager = requireNonNull(tablePropertyManager, "tablePropertyManager is null");
+            this.graphPropertyManager = requireNonNull(graphPropertyManager, "graphPropertyManager is null");
             this.columnPropertyManager = requireNonNull(columnPropertyManager, "columnPropertyManager is null");
             this.catalogHandle = requireNonNull(catalogHandle, "catalogHandle is null");
             this.connectorCapabilities = immutableEnumSet(requireNonNull(connectorCapabilities, "connectorCapabilities is null"));
@@ -301,6 +298,11 @@ public class TestCreateTableTask
         public TablePropertyManager getTablePropertyManager()
         {
             return tablePropertyManager;
+        }
+
+        @Override
+        public GraphPropertyManager getGraphPropertyManager() {
+            return graphPropertyManager;
         }
 
         @Override
