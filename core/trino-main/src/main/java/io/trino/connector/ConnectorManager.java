@@ -80,6 +80,7 @@ import static com.google.common.base.Verify.verify;
 import static io.trino.connector.CatalogName.createInformationSchemaCatalogName;
 import static io.trino.connector.CatalogName.createSystemTablesCatalogName;
 import static java.lang.String.format;
+import static java.util.Collections.emptyList;
 import static java.util.Objects.requireNonNull;
 
 @ThreadSafe
@@ -299,6 +300,7 @@ public class ConnectorManager
                 .ifPresent(accessControl -> accessControlManager.addCatalogAccessControl(catalogName, accessControl));
 
         metadataManager.getTablePropertyManager().addProperties(catalogName, connector.getTableProperties());
+        metadataManager.getGraphPropertyManager().addProperties(catalogName, connector.getGraphProperties());
         metadataManager.getColumnPropertyManager().addProperties(catalogName, connector.getColumnProperties());
         metadataManager.getSchemaPropertyManager().addProperties(catalogName, connector.getSchemaProperties());
         metadataManager.getAnalyzePropertyManager().addProperties(catalogName, connector.getAnalyzeProperties());
@@ -403,6 +405,7 @@ public class ConnectorManager
         private final List<EventListener> eventListeners;
         private final List<PropertyMetadata<?>> sessionProperties;
         private final List<PropertyMetadata<?>> tableProperties;
+        private final List<PropertyMetadata<?>> graphProperties;
         private final List<PropertyMetadata<?>> schemaProperties;
         private final List<PropertyMetadata<?>> columnProperties;
         private final List<PropertyMetadata<?>> analyzeProperties;
@@ -493,6 +496,10 @@ public class ConnectorManager
             requireNonNull(tableProperties, format("Connector '%s' returned a null table properties set", catalogName));
             this.tableProperties = ImmutableList.copyOf(tableProperties);
 
+            List<PropertyMetadata<?>> graphProperties = emptyList();//currently no connector has capability to conform with property graph
+            requireNonNull(graphProperties, format("Connector '%s' returned a null graph properties set", catalogName));
+            this.graphProperties = ImmutableList.copyOf(graphProperties);
+
             List<PropertyMetadata<?>> schemaProperties = connector.getSchemaProperties();
             requireNonNull(schemaProperties, format("Connector '%s' returned a null schema properties set", catalogName));
             this.schemaProperties = ImmutableList.copyOf(schemaProperties);
@@ -569,6 +576,11 @@ public class ConnectorManager
         public List<PropertyMetadata<?>> getTableProperties()
         {
             return tableProperties;
+        }
+
+        public List<PropertyMetadata<?>> getGraphProperties()
+        {
+            return graphProperties;
         }
 
         public List<PropertyMetadata<?>> getColumnProperties()

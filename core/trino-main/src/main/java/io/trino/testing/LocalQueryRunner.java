@@ -43,56 +43,19 @@ import io.trino.cost.StatsCalculator;
 import io.trino.cost.TaskCountEstimator;
 import io.trino.eventlistener.EventListenerConfig;
 import io.trino.eventlistener.EventListenerManager;
-import io.trino.execution.CommentTask;
-import io.trino.execution.CommitTask;
-import io.trino.execution.CreateTableTask;
-import io.trino.execution.CreateViewTask;
-import io.trino.execution.DataDefinitionTask;
-import io.trino.execution.DeallocateTask;
-import io.trino.execution.DropTableTask;
-import io.trino.execution.DropViewTask;
-import io.trino.execution.DynamicFilterConfig;
-import io.trino.execution.Lifespan;
-import io.trino.execution.NodeTaskMap;
-import io.trino.execution.PrepareTask;
-import io.trino.execution.QueryManagerConfig;
-import io.trino.execution.QueryPreparer;
+import io.trino.execution.*;
 import io.trino.execution.QueryPreparer.PreparedQuery;
-import io.trino.execution.RenameColumnTask;
-import io.trino.execution.RenameTableTask;
-import io.trino.execution.RenameViewTask;
-import io.trino.execution.ResetSessionTask;
-import io.trino.execution.RollbackTask;
-import io.trino.execution.ScheduledSplit;
-import io.trino.execution.SetPathTask;
-import io.trino.execution.SetSessionTask;
-import io.trino.execution.StartTransactionTask;
-import io.trino.execution.TaskManagerConfig;
-import io.trino.execution.TaskSource;
 import io.trino.execution.resourcegroups.NoOpResourceGroupManager;
 import io.trino.execution.scheduler.NodeScheduler;
 import io.trino.execution.scheduler.NodeSchedulerConfig;
 import io.trino.execution.scheduler.UniformNodeSelectorFactory;
 import io.trino.execution.warnings.WarningCollector;
+import io.trino.sql.parser.GraphSqlParser;
+import io.trino.sql.tree.CreatePropertyGraph;
 import io.trino.index.IndexManager;
 import io.trino.memory.MemoryManagerConfig;
 import io.trino.memory.NodeMemoryConfig;
-import io.trino.metadata.AnalyzePropertyManager;
-import io.trino.metadata.CatalogManager;
-import io.trino.metadata.ColumnPropertyManager;
-import io.trino.metadata.HandleResolver;
-import io.trino.metadata.InMemoryNodeManager;
-import io.trino.metadata.Metadata;
-import io.trino.metadata.MetadataManager;
-import io.trino.metadata.MetadataUtil;
-import io.trino.metadata.QualifiedObjectName;
-import io.trino.metadata.QualifiedTablePrefix;
-import io.trino.metadata.SchemaPropertyManager;
-import io.trino.metadata.SessionPropertyManager;
-import io.trino.metadata.Split;
-import io.trino.metadata.SqlFunction;
-import io.trino.metadata.TableHandle;
-import io.trino.metadata.TablePropertyManager;
+import io.trino.metadata.*;
 import io.trino.operator.Driver;
 import io.trino.operator.DriverContext;
 import io.trino.operator.DriverFactory;
@@ -229,6 +192,7 @@ public class LocalQueryRunner
     private final FinalizerService finalizerService;
 
     private final SqlParser sqlParser;
+    private final GraphSqlParser gsqlParser;
     private final PlanFragmenter planFragmenter;
     private final InMemoryNodeManager nodeManager;
     private final TypeOperators typeOperators;
@@ -301,6 +265,7 @@ public class LocalQueryRunner
         this.typeOperators = new TypeOperators();
         this.blockTypeOperators = new BlockTypeOperators(typeOperators);
         this.sqlParser = new SqlParser();
+        this.gsqlParser = new GraphSqlParser();
         this.nodeManager = new InMemoryNodeManager();
         PageSorter pageSorter = new PagesIndexPageSorter(new PagesIndex.TestingFactory(false));
         this.indexManager = new IndexManager();
@@ -321,6 +286,7 @@ public class LocalQueryRunner
                 new SessionPropertyManager(new SystemSessionProperties(new QueryManagerConfig(), taskManagerConfig, new MemoryManagerConfig(), featuresConfig, new NodeMemoryConfig(), new DynamicFilterConfig(), new NodeSchedulerConfig())),
                 new SchemaPropertyManager(),
                 new TablePropertyManager(),
+                new GraphPropertyManager(),
                 new ColumnPropertyManager(),
                 new AnalyzePropertyManager(),
                 transactionManager,
@@ -420,6 +386,7 @@ public class LocalQueryRunner
 
         dataDefinitionTask = ImmutableMap.<Class<? extends Statement>, DataDefinitionTask<?>>builder()
                 .put(CreateTable.class, new CreateTableTask())
+                .put(CreatePropertyGraph.class, new CreatePropertyGraphTask(gsqlParser))
                 .put(CreateView.class, new CreateViewTask(sqlParser, groupProvider, statsCalculator))
                 .put(DropTable.class, new DropTableTask())
                 .put(DropView.class, new DropViewTask())
@@ -429,7 +396,7 @@ public class LocalQueryRunner
                 .put(Comment.class, new CommentTask())
                 .put(ResetSession.class, new ResetSessionTask())
                 .put(SetSession.class, new SetSessionTask())
-                .put(Prepare.class, new PrepareTask(sqlParser))
+                .put(Prepare.class, new PrepareTask(sqlParser,gsqlParser))
                 .put(Deallocate.class, new DeallocateTask())
                 .put(StartTransaction.class, new StartTransactionTask())
                 .put(Commit.class, new CommitTask())
@@ -478,6 +445,10 @@ public class LocalQueryRunner
     public SqlParser getSqlParser()
     {
         return sqlParser;
+    }
+
+    public GraphSqlParser getGsqlParser() {
+        return gsqlParser;
     }
 
     @Override
@@ -847,7 +818,7 @@ public class LocalQueryRunner
 
     public Plan createPlan(Session session, @Language("SQL") String sql, LogicalPlanner.Stage stage, boolean forceSingleNode, WarningCollector warningCollector)
     {
-        PreparedQuery preparedQuery = new QueryPreparer(sqlParser).prepareQuery(session, sql);
+        PreparedQuery preparedQuery = new QueryPreparer(sqlParser,gsqlParser).prepareQuery(session, sql);
 
         assertFormattedSql(sqlParser, createParsingOptions(session), preparedQuery.getStatement());
 
@@ -881,7 +852,7 @@ public class LocalQueryRunner
 
     public Plan createPlan(Session session, @Language("SQL") String sql, List<PlanOptimizer> optimizers, LogicalPlanner.Stage stage, WarningCollector warningCollector)
     {
-        PreparedQuery preparedQuery = new QueryPreparer(sqlParser).prepareQuery(session, sql);
+        PreparedQuery preparedQuery = new QueryPreparer(sqlParser,gsqlParser).prepareQuery(session, sql);
 
         assertFormattedSql(sqlParser, createParsingOptions(session), preparedQuery.getStatement());
 

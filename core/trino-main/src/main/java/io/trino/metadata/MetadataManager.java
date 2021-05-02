@@ -195,6 +195,7 @@ public final class MetadataManager
     private final SessionPropertyManager sessionPropertyManager;
     private final SchemaPropertyManager schemaPropertyManager;
     private final TablePropertyManager tablePropertyManager;
+    private final GraphPropertyManager graphPropertyManager;
     private final ColumnPropertyManager columnPropertyManager;
     private final AnalyzePropertyManager analyzePropertyManager;
     private final TransactionManager transactionManager;
@@ -214,6 +215,7 @@ public final class MetadataManager
             SessionPropertyManager sessionPropertyManager,
             SchemaPropertyManager schemaPropertyManager,
             TablePropertyManager tablePropertyManager,
+            GraphPropertyManager graphPropertyManager,
             ColumnPropertyManager columnPropertyManager,
             AnalyzePropertyManager analyzePropertyManager,
             TransactionManager transactionManager,
@@ -230,6 +232,7 @@ public final class MetadataManager
         this.sessionPropertyManager = requireNonNull(sessionPropertyManager, "sessionPropertyManager is null");
         this.schemaPropertyManager = requireNonNull(schemaPropertyManager, "schemaPropertyManager is null");
         this.tablePropertyManager = requireNonNull(tablePropertyManager, "tablePropertyManager is null");
+        this.graphPropertyManager = requireNonNull(graphPropertyManager, "graphPropertyManager is null");
         this.columnPropertyManager = requireNonNull(columnPropertyManager, "columnPropertyManager is null");
         this.analyzePropertyManager = requireNonNull(analyzePropertyManager, "analyzePropertyManager is null");
         this.transactionManager = requireNonNull(transactionManager, "transactionManager is null");
@@ -302,6 +305,7 @@ public final class MetadataManager
                 new SessionPropertyManager(),
                 new SchemaPropertyManager(),
                 new TablePropertyManager(),
+                new GraphPropertyManager(),
                 new ColumnPropertyManager(),
                 new AnalyzePropertyManager(),
                 transactionManager,
@@ -2240,6 +2244,11 @@ public final class MetadataManager
     public TablePropertyManager getTablePropertyManager()
     {
         return tablePropertyManager;
+    }
+    @Override
+    public GraphPropertyManager getGraphPropertyManager()
+    {
+        return graphPropertyManager;
     }
 
     @Override

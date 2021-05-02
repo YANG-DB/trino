@@ -18,6 +18,7 @@ import io.trino.execution.warnings.WarningCollector;
 import io.trino.metadata.Metadata;
 import io.trino.security.AccessControl;
 import io.trino.spi.TrinoException;
+import io.trino.sql.parser.GraphSqlParser;
 import io.trino.sql.parser.SqlParser;
 import io.trino.sql.tree.Deallocate;
 import io.trino.sql.tree.Execute;
@@ -42,7 +43,7 @@ public class PrepareTask
     private final SqlParser sqlParser;
 
     @Inject
-    public PrepareTask(SqlParser sqlParser)
+    public PrepareTask(SqlParser sqlParser, GraphSqlParser gsqlParser)
     {
         this.sqlParser = requireNonNull(sqlParser, "sqlParser is null");
     }

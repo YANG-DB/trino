@@ -607,6 +607,8 @@ public interface Metadata
 
     TablePropertyManager getTablePropertyManager();
 
+    GraphPropertyManager getGraphPropertyManager();
+
     ColumnPropertyManager getColumnPropertyManager();
 
     AnalyzePropertyManager getAnalyzePropertyManager();

@@ -41,8 +41,8 @@ import java.util.function.Function;
 
 import static java.util.Objects.requireNonNull;
 
-public class SqlParser
-{
+public class SqlParser implements StatementCreator {
+
     private static final BaseErrorListener LEXER_ERROR_LISTENER = new BaseErrorListener()
     {
         @Override
@@ -79,9 +79,15 @@ public class SqlParser
         this.initializer = requireNonNull(initializer, "initializer is null");
     }
 
+    @Override
     public Statement createStatement(String sql, ParsingOptions parsingOptions)
     {
         return (Statement) invokeParser("statement", sql, SqlBaseParser::singleStatement, parsingOptions);
+    }
+
+    @Override
+    public boolean isParse(String sql) {
+        return true;
     }
 
     public Expression createExpression(String expression, ParsingOptions parsingOptions)
