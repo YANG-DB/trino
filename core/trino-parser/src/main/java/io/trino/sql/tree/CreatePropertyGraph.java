@@ -23,7 +23,8 @@ import static com.google.common.base.MoreObjects.toStringHelper;
 import static java.util.Objects.requireNonNull;
 
 public class CreatePropertyGraph
-        extends Statement {
+        extends Statement
+    {
     private final QualifiedName name;
     private final List<GraphElement> elements;
     private final boolean notExists;
@@ -31,15 +32,18 @@ public class CreatePropertyGraph
     private final List<Edge> edges;
     private final Optional<String> comment;
 
-    public CreatePropertyGraph(QualifiedName name, List<GraphElement> elements, boolean notExists, List<Vertex> vertices, List<Edge> edges, Optional<String> comment) {
+    public CreatePropertyGraph(QualifiedName name, List<GraphElement> elements, boolean notExists, List<Vertex> vertices, List<Edge> edges, Optional<String> comment)
+    {
         this(Optional.empty(), name, elements, notExists, vertices, edges, comment);
     }
 
-    public CreatePropertyGraph(NodeLocation location, QualifiedName name, List<GraphElement> elements, boolean notExists, List<Vertex> vertices, List<Edge> edges, Optional<String> comment) {
+    public CreatePropertyGraph(NodeLocation location, QualifiedName name, List<GraphElement> elements, boolean notExists, List<Vertex> vertices, List<Edge> edges, Optional<String> comment)
+    {
         this(Optional.of(location), name, elements, notExists, vertices, edges, comment);
     }
 
-    private CreatePropertyGraph(Optional<NodeLocation> location, QualifiedName name, List<GraphElement> elements, boolean notExists, List<Vertex> vertices, List<Edge> edges, Optional<String> comment) {
+    private CreatePropertyGraph(Optional<NodeLocation> location, QualifiedName name, List<GraphElement> elements, boolean notExists, List<Vertex> vertices, List<Edge> edges, Optional<String> comment)
+    {
         super(location);
         this.name = requireNonNull(name, "name is null");
         this.elements = ImmutableList.copyOf(requireNonNull(elements, "elements is null"));
@@ -49,40 +53,48 @@ public class CreatePropertyGraph
         this.comment = requireNonNull(comment, "comment is null");
     }
 
-    public QualifiedName getName() {
+    public QualifiedName getName()
+    {
         return name;
     }
 
-    public List<GraphElement> getElements() {
+    public List<GraphElement> getElements()
+    {
         return elements;
     }
 
-    public boolean isNotExists() {
+    public boolean isNotExists()
+    {
         return notExists;
     }
 
 
-    public List<Vertex> getVertices() {
+    public List<Vertex> getVertices()
+    {
         return vertices;
     }
 
 
-    public List<Edge> getEdges() {
+    public List<Edge> getEdges()
+    {
         return edges;
     }
 
-    public Optional<String> getComment() {
+    public Optional<String> getComment()
+{
         return comment;
     }
 
     @Override
-    public <R, C> R accept(AstVisitor<R, C> visitor, C context) {
+    public <R, C> R accept(AstVisitor<R, C> visitor, C context)
+{
         return (R) visitor.visitCreateGraph(this, context);
     }
 
 
     @Override
-    public List<Node> getChildren() {
+    public List<Node> getChildren()
+    {
         return ImmutableList.<Node>builder()
                 .addAll(elements)
                 .addAll(vertices)
@@ -91,16 +103,20 @@ public class CreatePropertyGraph
     }
 
     @Override
-    public int hashCode() {
+    public int hashCode()
+    {
         return Objects.hash(name, elements, notExists, vertices, edges, comment);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+{
             return true;
         }
-        if ((obj == null) || (getClass() != obj.getClass())) {
+        if ((obj == null) || (getClass() != obj.getClass()))
+{
             return false;
         }
         CreatePropertyGraph o = (CreatePropertyGraph) obj;
@@ -113,7 +129,8 @@ public class CreatePropertyGraph
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return toStringHelper(this)
                 .add("name", name)
                 .add("elements", elements)

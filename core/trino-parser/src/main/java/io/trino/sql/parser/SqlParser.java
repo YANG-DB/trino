@@ -41,7 +41,8 @@ import java.util.function.Function;
 
 import static java.util.Objects.requireNonNull;
 
-public class SqlParser implements StatementCreator {
+public class SqlParser implements StatementCreator
+{
 
     private static final BaseErrorListener LEXER_ERROR_LISTENER = new BaseErrorListener()
     {

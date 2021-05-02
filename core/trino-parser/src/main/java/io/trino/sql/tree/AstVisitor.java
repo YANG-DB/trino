@@ -127,10 +127,10 @@ public abstract class AstVisitor<R, C>
         return visitStatement(node, context);
     }
 
-    protected R visitShowGraphs(ShowGraphs node, C context) {
+    protected R visitShowGraphs(ShowGraphs node, C context)
+    {
         return visitStatement(node, context);
     }
-
 
     protected R visitShowSchemas(ShowSchemas node, C context)
     {
@@ -922,11 +922,13 @@ public abstract class AstVisitor<R, C>
         return visitStatement(node, context);
     }
 
-    protected R visitCreateGraph(CreatePropertyGraph node, C context) {
+    protected R visitCreateGraph(CreatePropertyGraph node, C context)
+    {
         return visitStatement(node, context);
     }
 
-    protected R visitGraphElement(GraphElement node, C context) {
+    protected R visitGraphElement(GraphElement node, C context)
+    {
         return visitNode(node, context);
     }
 

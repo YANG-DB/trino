@@ -802,17 +802,20 @@ public abstract class DefaultTraversalVisitor<C>
         return null;
     }
 
-
     @Override
-    public Void visitCreateGraph(CreatePropertyGraph node, C context) {
-        for (GraphElement tableElement : node.getElements()) {
+    public Void visitCreateGraph(CreatePropertyGraph node, C context)
+    {
+        for (GraphElement tableElement : node.getElements())
+        {
             process(tableElement, context);
         }
-        for (Vertex property : node.getVertices()) {
+        for (Vertex property : node.getVertices())
+        {
             process(property, context);
         }
 
-        for (Edge property : node.getEdges()) {
+        for (Edge property : node.getEdges())
+        {
             process(property, context);
         }
 
